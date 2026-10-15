@@ -108,7 +108,7 @@ void test_binary_classification_raw() {
 
   let loss = loss_functions::get_binary_nll_loss(y0, y1);
 
-  let params_values = fit(model, loss, samples, 100, .001f);
+  let params_values = fit(model, loss, samples, 100, .1f);
 
   CHECK(equals(params_values[0], p_y0_real));
 }
@@ -132,7 +132,7 @@ void test_binary_classification_sigmoid() {
 
   let loss = loss_functions::get_binary_nll_loss(y0, y1);
 
-  let params_values = fit(model, loss, samples, 100, .01f);
+  let params_values = fit(model, loss, samples, 100, 1.f);
 
   CHECK(equals(expr::sigmoid(params_values[0]), p_y0_real));
 }
@@ -180,7 +180,7 @@ void test_multiclass_classification_raw() {
 
   let loss = loss_functions::get_nll_loss({RED, BLUE, GREEN});
 
-  let params_values = fit(model, loss, samples, 100, .0001f);
+  let params_values = fit(model, loss, samples, 100, .1f);
 
   CHECK(equals(params_values[0], p_RED_real));
   CHECK(equals(params_values[1], p_BLUE_real));
@@ -212,7 +212,7 @@ void test_multiclass_classification_softmax() {
 
   let loss = loss_functions::get_nll_loss({RED, BLUE, GREEN});
 
-  let params_values = fit(model, loss, samples, 100, .001f);
+  let params_values = fit(model, loss, samples, 100, 1.f);
   let probas = expr::softmax_dim_minus_one(params_values);
 
   CHECK(equals(probas[0], p_RED_real));
@@ -229,6 +229,9 @@ UNITTEST() {
 
   // TODO:
   //  - Energy distance
+  //    => see 'energy score Gneiting–Raftery', which looks adpated
+  //       to the special case where (X,Y) is causal Y=F(X), even
+  //       if Y is stochastic.
 }
 
 }//[mto.module-end]

@@ -77,6 +77,10 @@ real_t operator/(float x, real_t b) {
   return real_t{b.p_dag, x} / b;
 }
 
+real_t operator/(real_t x, float b) {
+  return x / real_t{x.p_dag, b};
+}
+
 real_t operator+(float x, real_t b) {
   return real_t{b.p_dag, x} + b;
 }
@@ -219,6 +223,5 @@ softmax_dim_minus_one(cspan_t<float> partial_logits) {
   logits.push_back(1.f / (partial_logits.size() + 1));
   return expr::softmax(logits);
 }
-
 
 }//[mto.module-end]

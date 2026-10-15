@@ -56,6 +56,7 @@ real_t operator-(float x, real_t b);
 real_t operator+(float x, real_t b);
 real_t operator*(float x, real_t b);
 real_t operator/(float x, real_t b);
+real_t operator/(real_t x, float b);
 
 real_t relu(real_t x);
 real_t log(real_t x);

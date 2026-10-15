@@ -130,7 +130,7 @@ void test_binary_classification_X_1d() {
   let init_params = model.get_init_parameters_values();
   let on_iteration = [&](model::iteration_cb_data_t const &data) {};
   let params = fit_model(model, loss, init_params, samples,
-                         model::basic_scheduler_t{10, .1}, on_iteration);
+                         model::basic_scheduler_t{10, 1}, on_iteration);
 
   let predictor = build_predictor(model, params);
 
@@ -200,7 +200,7 @@ void test_binary_classification_X_2d() {
   //  - avoir un decroissance rapide au debut
   //  - eviter les instabilité à la fin
   // -> ! si decay trop importante, on ne converge plus ...
-  let scheduler = model::warmup_decay_scheduler_t{.001, 1.02, 100, .999, 1000};
+  let scheduler = model::warmup_decay_scheduler_t{.1, 1.02, 100, .999, 1000};
 
   let params = fit_model(model, loss, init_params, samples,
                          scheduler, on_iteration);

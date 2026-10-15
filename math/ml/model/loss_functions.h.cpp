@@ -38,7 +38,7 @@ loss_func_t get_binary_nll_loss(float y0, float y1) {
       let py = ops.cases(y, {{ops(y0), p_y0}, {ops(y1), p_y1}});
       loss -= log(py);
     }
-    return loss;
+    return loss / float(samples.size());
   };
   return binary_nll_loss;
 }
@@ -63,7 +63,7 @@ loss_func_t get_nll_loss(vector_t<float> const &Y_values) {
       let py = ops.cases(y, cases);
       loss -= log(py);
     }
-    return loss;
+    return loss / float(samples.size());
   };
   return nll_loss;
 }
