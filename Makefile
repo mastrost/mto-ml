@@ -1,13 +1,3 @@
-computing deps of /home/thierry/git/mto-ml/bin_release/math/ml/mlp/mlp.test.depcomputing deps of /home/thierry/git/mto-ml/bin_release/math/ml/expr/dag.h.dep
-computing deps of /home/thierry/git/mto-ml/bin_release/math/ml/mlp/mlp.h.dep
-computing deps of /home/thierry/git/mto-ml/bin_release/math/ml/expr/expr.h.dep
-
-computing deps of /home/thierry/git/mto-ml/bin_release/math/ml/model/model.h.dep
-computing deps of /home/thierry/git/mto-ml/bin_release/math/ml/model/loss_functions.h.dep
-computing deps of /home/thierry/git/mto-ml/bin_release/no_stl/math/functions.h.dep
-computing deps of /home/thierry/git/mto-ml/bin_release/math/ml/model/model.test.dep
-computing deps of /home/thierry/git/mto-ml/bin_release/cpp_tools/defines.h.dep
-computing deps of /home/thierry/git/mto-ml/bin_release/cpp_tools/unittest.h.dep
 BIN=bin
 
 TARGET_0=$(BIN)/math/ml/mlp/mlp.test.cpp.exe
