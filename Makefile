@@ -1,0 +1,242 @@
+BIN=bin
+
+TARGET_0=$(BIN)/math/ml/mlp/mlp.test.cpp.exe
+TARGETS+=$(TARGET_0)
+TESTS+=$(TARGET_0)
+TARGET_0_OBJS+=$(BIN)/math/ml/mlp/mlp.test.cpp.o
+TARGET_0_OBJS+=$(BIN)/math/ml/mlp/mlp.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/no_stl/result/error.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/math/ml/expr/dag.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/math/ml/expr/compiler/dag_to_ast.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/cpp_tools/defines.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/no_stl/string/string.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/math/ml/expr/compiler/jit_compiler.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/cpp_tools/unittest.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/math/ml/model/model.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/math/ml/model/loss_functions.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/math/ml/expr/expr.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/math/ml/expr/compiler/ast.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/no_stl/math/functions.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/no_stl/string/string.manip.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/no_stl/string/c_str_host.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/no_stl/string/string_view.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/math/ml/expr/compiler/ast_to_c_source.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/math/ml/expr/values.h.cpp.o
+TARGET_0_OBJS+=$(BIN)/math/ml/expr/dag_eval.h.cpp.o
+$(TARGET_0): $(TARGET_0_OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) -o "$@" $^ $(LDFLAGS)
+
+TARGET_1=$(BIN)/math/ml/projects/makemore/bigram2.main.cpp.exe
+TARGETS+=$(TARGET_1)
+TARGET_1_OBJS+=$(BIN)/math/ml/projects/makemore/bigram2.main.cpp.o
+TARGET_1_OBJS+=$(BIN)/no_stl/string/c_str_host.h.cpp.o
+TARGET_1_OBJS+=$(BIN)/no_stl/string/string_view.h.cpp.o
+TARGET_1_OBJS+=$(BIN)/cpp_tools/main.h.cpp.o
+TARGET_1_OBJS+=$(BIN)/no_stl/string/string.h.cpp.o
+TARGET_1_OBJS+=$(BIN)/cpp_tools/defines.h.cpp.o
+TARGET_1_OBJS+=$(BIN)/math/ml/expr/expr.h.cpp.o
+TARGET_1_OBJS+=$(BIN)/math/ml/expr/values.h.cpp.o
+TARGET_1_OBJS+=$(BIN)/math/ml/expr/dag_eval.h.cpp.o
+TARGET_1_OBJS+=$(BIN)/no_stl/system/file/file_utils.h.cpp.o
+TARGET_1_OBJS+=$(BIN)/no_stl/result/error.h.cpp.o
+TARGET_1_OBJS+=$(BIN)/math/ml/expr/dag.h.cpp.o
+TARGET_1_OBJS+=$(BIN)/no_stl/math/functions.h.cpp.o
+TARGET_1_OBJS+=$(BIN)/math/ml/projects/makemore/common.h.cpp.o
+$(TARGET_1): $(TARGET_1_OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) -o "$@" $^ $(LDFLAGS)
+
+TARGET_2=$(BIN)/math/ml/projects/makemore/mlp.main.cpp.exe
+TARGETS+=$(TARGET_2)
+TARGET_2_OBJS+=$(BIN)/math/ml/projects/makemore/mlp.main.cpp.o
+TARGET_2_OBJS+=$(BIN)/math/ml/model/model.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/no_stl/string/string.manip.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/math/ml/expr/compiler/dag_to_ast.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/math/ml/expr/compiler/ast_to_c_source.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/no_stl/string/c_str_host.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/no_stl/string/string_view.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/cpp_tools/main.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/no_stl/math/functions.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/no_stl/string/string.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/cpp_tools/defines.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/math/ml/expr/compiler/ast.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/math/ml/expr/expr.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/no_stl/system/file/file_utils.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/no_stl/result/error.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/math/ml/expr/dag.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/math/ml/expr/values.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/math/ml/expr/dag_eval.h.cpp.o
+TARGET_2_OBJS+=$(BIN)/math/ml/expr/compiler/jit_compiler.h.cpp.o
+$(TARGET_2): $(TARGET_2_OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) -o "$@" $^ $(LDFLAGS)
+
+TARGET_3=$(BIN)/math/ml/projects/makemore/bigram.main.cpp.exe
+TARGETS+=$(TARGET_3)
+TARGET_3_OBJS+=$(BIN)/math/ml/projects/makemore/bigram.main.cpp.o
+TARGET_3_OBJS+=$(BIN)/math/ml/model/model.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/no_stl/string/string.manip.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/math/ml/expr/compiler/dag_to_ast.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/cpp_tools/defines.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/math/ml/model/loss_functions.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/math/ml/expr/compiler/ast.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/math/ml/expr/expr.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/no_stl/string/string.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/cpp_tools/main.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/math/ml/expr/values.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/math/ml/expr/dag_eval.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/no_stl/system/file/file_utils.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/no_stl/result/error.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/math/ml/expr/dag.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/math/ml/mlp/mlp.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/no_stl/math/functions.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/math/ml/projects/makemore/common.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/math/ml/expr/compiler/ast_to_c_source.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/no_stl/string/string_view.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/no_stl/string/c_str_host.h.cpp.o
+TARGET_3_OBJS+=$(BIN)/math/ml/expr/compiler/jit_compiler.h.cpp.o
+$(TARGET_3): $(TARGET_3_OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) -o "$@" $^ $(LDFLAGS)
+
+TARGET_4=$(BIN)/math/ml/expr/expr.test.cpp.exe
+TARGETS+=$(TARGET_4)
+TESTS+=$(TARGET_4)
+TARGET_4_OBJS+=$(BIN)/math/ml/expr/dag.h.cpp.o
+TARGET_4_OBJS+=$(BIN)/math/ml/expr/dag_eval.h.cpp.o
+TARGET_4_OBJS+=$(BIN)/math/ml/expr/values.h.cpp.o
+TARGET_4_OBJS+=$(BIN)/no_stl/result/error.h.cpp.o
+TARGET_4_OBJS+=$(BIN)/no_stl/string/c_str_host.h.cpp.o
+TARGET_4_OBJS+=$(BIN)/no_stl/string/string_view.h.cpp.o
+TARGET_4_OBJS+=$(BIN)/no_stl/math/functions.h.cpp.o
+TARGET_4_OBJS+=$(BIN)/cpp_tools/unittest.h.cpp.o
+TARGET_4_OBJS+=$(BIN)/math/ml/expr/expr.test.cpp.o
+TARGET_4_OBJS+=$(BIN)/math/ml/expr/expr.h.cpp.o
+TARGET_4_OBJS+=$(BIN)/no_stl/string/string.h.cpp.o
+TARGET_4_OBJS+=$(BIN)/cpp_tools/defines.h.cpp.o
+$(TARGET_4): $(TARGET_4_OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) -o "$@" $^ $(LDFLAGS)
+
+TARGET_5=$(BIN)/math/ml/expr/values.test.cpp.exe
+TARGETS+=$(TARGET_5)
+TESTS+=$(TARGET_5)
+TARGET_5_OBJS+=$(BIN)/math/ml/expr/values.test.cpp.o
+TARGET_5_OBJS+=$(BIN)/math/ml/expr/values.h.cpp.o
+TARGET_5_OBJS+=$(BIN)/cpp_tools/unittest.h.cpp.o
+TARGET_5_OBJS+=$(BIN)/cpp_tools/defines.h.cpp.o
+$(TARGET_5): $(TARGET_5_OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) -o "$@" $^ $(LDFLAGS)
+
+TARGET_6=$(BIN)/math/ml/expr/compiler/ast_to_c_source.h.test.cpp.exe
+TARGETS+=$(TARGET_6)
+TESTS+=$(TARGET_6)
+TARGET_6_OBJS+=$(BIN)/math/ml/expr/compiler/ast_to_c_source.h.cpp.o
+TARGET_6_OBJS+=$(BIN)/math/ml/expr/compiler/ast.h.cpp.o
+TARGET_6_OBJS+=$(BIN)/no_stl/string/c_str_host.h.cpp.o
+TARGET_6_OBJS+=$(BIN)/math/ml/expr/compiler/ast_to_c_source.h.test.cpp.o
+TARGET_6_OBJS+=$(BIN)/no_stl/string/string_view.h.cpp.o
+TARGET_6_OBJS+=$(BIN)/cpp_tools/unittest.h.cpp.o
+TARGET_6_OBJS+=$(BIN)/no_stl/string/string.h.cpp.o
+TARGET_6_OBJS+=$(BIN)/cpp_tools/defines.h.cpp.o
+$(TARGET_6): $(TARGET_6_OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) -o "$@" $^ $(LDFLAGS)
+
+TARGET_7=$(BIN)/math/ml/expr/compiler/dag_to_ast.test.cpp.exe
+TARGETS+=$(TARGET_7)
+TESTS+=$(TARGET_7)
+TARGET_7_OBJS+=$(BIN)/math/ml/expr/compiler/dag_to_ast.test.cpp.o
+TARGET_7_OBJS+=$(BIN)/no_stl/math/functions.h.cpp.o
+TARGET_7_OBJS+=$(BIN)/no_stl/string/string.manip.h.cpp.o
+TARGET_7_OBJS+=$(BIN)/no_stl/string/string.h.cpp.o
+TARGET_7_OBJS+=$(BIN)/cpp_tools/defines.h.cpp.o
+TARGET_7_OBJS+=$(BIN)/math/ml/expr/compiler/ast.h.cpp.o
+TARGET_7_OBJS+=$(BIN)/math/ml/expr/expr.h.cpp.o
+TARGET_7_OBJS+=$(BIN)/no_stl/string/c_str_host.h.cpp.o
+TARGET_7_OBJS+=$(BIN)/no_stl/string/string_view.h.cpp.o
+TARGET_7_OBJS+=$(BIN)/math/ml/expr/compiler/ast_to_c_source.h.cpp.o
+TARGET_7_OBJS+=$(BIN)/math/ml/expr/dag.h.cpp.o
+TARGET_7_OBJS+=$(BIN)/math/ml/expr/values.h.cpp.o
+TARGET_7_OBJS+=$(BIN)/cpp_tools/unittest.h.cpp.o
+TARGET_7_OBJS+=$(BIN)/math/ml/expr/compiler/dag_to_ast.h.cpp.o
+$(TARGET_7): $(TARGET_7_OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) -o "$@" $^ $(LDFLAGS)
+
+TARGET_8=$(BIN)/math/ml/expr/compiler/jit_compiler.test.cpp.exe
+TARGETS+=$(TARGET_8)
+TESTS+=$(TARGET_8)
+TARGET_8_OBJS+=$(BIN)/math/ml/expr/compiler/jit_compiler.test.cpp.o
+TARGET_8_OBJS+=$(BIN)/no_stl/string/string.manip.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/cpp_tools/defines.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/no_stl/string/string.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/math/ml/expr/compiler/ast.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/math/ml/expr/expr.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/math/ml/expr/compiler/jit_compiler.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/cpp_tools/unittest.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/math/ml/expr/compiler/dag_to_ast.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/no_stl/math/functions.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/no_stl/result/error.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/math/ml/expr/dag.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/math/ml/expr/values.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/math/ml/expr/dag_eval.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/no_stl/string/string_view.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/no_stl/string/c_str_host.h.cpp.o
+TARGET_8_OBJS+=$(BIN)/math/ml/expr/compiler/ast_to_c_source.h.cpp.o
+$(TARGET_8): $(TARGET_8_OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) -o "$@" $^ $(LDFLAGS)
+
+TARGET_9=$(BIN)/math/ml/model/model.test.cpp.exe
+TARGETS+=$(TARGET_9)
+TESTS+=$(TARGET_9)
+TARGET_9_OBJS+=$(BIN)/no_stl/result/error.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/math/ml/expr/dag.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/math/ml/expr/compiler/dag_to_ast.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/cpp_tools/defines.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/math/ml/model/model.test.cpp.o
+TARGET_9_OBJS+=$(BIN)/no_stl/string/string.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/math/ml/expr/compiler/jit_compiler.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/cpp_tools/unittest.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/math/ml/model/model.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/math/ml/model/loss_functions.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/math/ml/expr/expr.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/math/ml/expr/compiler/ast.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/no_stl/math/functions.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/no_stl/string/string.manip.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/no_stl/string/c_str_host.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/no_stl/string/string_view.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/math/ml/expr/compiler/ast_to_c_source.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/math/ml/expr/values.h.cpp.o
+TARGET_9_OBJS+=$(BIN)/math/ml/expr/dag_eval.h.cpp.o
+$(TARGET_9): $(TARGET_9_OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) -o "$@" $^ $(LDFLAGS)
+
+
+CXXFLAGS+=-std=c++20 -I. -O3 -Wall -DCHECK_PRECONDITIONS
+
+include $(shell test -d $(BIN) && find $(BIN) -name "*.dep")
+
+$(BIN)/%.cpp.o: %.cpp 
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c -o "$@" $<
+	$(CXX) $(CXXFLAGS) -MM -MT "$@" -c -o "$(BIN)/$*.dep" $<
+
+all:$(TARGETS)
+
+test:$(TESTS)
+	@for exe in $(TESTS); do \
+		printf "testing $$exe: "; \
+		./$$exe > /dev/null 2>&1 && printf "OK\n" || printf "FAILED\n"; \
+	done
+
+.DEFAULT_GOAL := all
+
+clean:
+	rm -rf $(BIN)
+
+.PHONY: clean all test

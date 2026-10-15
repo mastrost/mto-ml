@@ -1,0 +1,75 @@
+#pragma once
+
+
+#include "./../expr/expr.h"
+#include "no_stl/vector/vector.h"
+#include "no_stl/span/span.h"
+namespace mto::math::ml::mlp::mlp {
+using mto::math::ml::expr::expr::ops_t;
+using mto::math::ml::expr::expr::real_t;
+using mto::no_stl::vector::vector::vector_t;
+using mto::no_stl::span::span::cspan_t;
+}
+#include "cpp_tools/defines.h"
+namespace mto::math::ml::mlp::mlp {
+
+enum class activation_t { linear,
+                          relu };
+
+real_t eval_neuron(cspan_t<real_t> X,
+                   real_t b, cspan_t<real_t> W,
+                   activation_t activation,
+                   ops_t ops);
+
+struct neuron_t {
+  // consumes the elements of 'params' to initialize b and W
+  neuron_t(size_t num_inputs,
+           activation_t _activation,
+           cspan_t<real_t> &params,
+           ops_t _ops);
+
+  // same order as the constructor uses for `params`
+  static void
+  get_init_parameters_values(size_t num_inputs, vector_t<float> &params);
+
+  real_t eval(cspan_t<real_t> X) const;
+
+  real_t b;
+  vector_t<real_t> W;
+  activation_t activation;
+  ops_t ops;
+};
+
+struct layer_t {
+  layer_t(size_t num_inputs, size_t num_neurons,
+          activation_t activation,
+          cspan_t<real_t> &params,
+          ops_t ops);
+
+  static void
+  get_init_parameters_values(size_t num_inputs, size_t num_neurons,
+                             vector_t<float> &params);
+
+  vector_t<real_t> eval(cspan_t<real_t> X) const;
+
+  vector_t<neuron_t> neurons;
+};
+
+struct mlp_t {
+  mlp_t(size_t num_inputs,
+        vector_t<size_t> const &layers_sizes,
+        vector_t<activation_t> const &layers_activations,
+        cspan_t<real_t> &params, ops_t ops);
+
+  static void
+  get_init_parameters_values(size_t num_inputs,
+                             vector_t<size_t> const &layers_sizes,
+                             vector_t<float> &params);
+
+  vector_t<real_t> eval(cspan_t<real_t> X) const;
+
+  // must be of the form (a,b) -> (b->c) -> (c->d)
+  vector_t<layer_t> layers;
+};
+
+}
