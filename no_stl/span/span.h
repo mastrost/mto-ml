@@ -1,6 +1,6 @@
 #pragma once
 
-//[mto.import ./index_iterator:foreach_index_t]
+//[mto.import ./index_iterator:foreach_index_t,foreach_rindex_t]
 #include "traits/span_trait.h"
 #include "traits/index_trait.h"
 //[mto.import no_stl/utility:remove_cv]
@@ -11,6 +11,7 @@
 #include "no_stl/utility.h"
 namespace mto::no_stl::span::span {
 using mto::no_stl::span::index_iterator::foreach_index_t;
+using mto::no_stl::span::index_iterator::foreach_rindex_t;
 using mto::no_stl::utility::remove_cv;
 }
 #include "cpp_tools/defines.h"
@@ -72,6 +73,7 @@ struct span_t {
   element_type *end() const { return _data + static_cast<size_t>(_size); }
 
   foreach_index_t<index_type> foreach_index() const { return {_size}; }
+  foreach_rindex_t<index_type> foreach_rindex() const { return {_size}; }
 
   element_type *_data;
   index_type _size;

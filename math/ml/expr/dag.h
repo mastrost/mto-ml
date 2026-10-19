@@ -61,7 +61,7 @@ enum func_t { relu, log, exp };
 
 struct special_func_t {
   func_t func;
-  node_id_t sub;
+  node_id_t arg;
 };
 
 typedef stack_variant_t<fconst_t, var_t,

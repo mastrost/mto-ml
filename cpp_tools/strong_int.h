@@ -61,6 +61,13 @@ struct strong_typed_int : conv_to_t<strong_typed_int<int_type_t, _name_, bases_t
     return strong_typed_int(res);
   }
 
+  strong_typed_int operator--() { return strong_typed_int(--value); }
+  strong_typed_int operator--(int) {
+    let res = value;
+    value--;
+    return strong_typed_int(res);
+  }
+
   void operator+=(strong_typed_int o) { value += o.value; }
   void operator-=(strong_typed_int o) { value -= o.value; }
 

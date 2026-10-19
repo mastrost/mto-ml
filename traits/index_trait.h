@@ -25,7 +25,9 @@ template <typename tag_t>
 struct c_array_iterator_trait_t : c_array_index_trait_t<tag_t> {
   explicit c_array_iterator_trait_t(size_t);
   void operator++();
+  void operator--();
   c_array_iterator_trait_t operator++(int);
+  c_array_iterator_trait_t operator--(int);
   c_array_iterator_trait_t operator+(c_array_iterator_trait_t const &) const;
   c_array_iterator_trait_t operator-(c_array_iterator_trait_t const &) const;
   void operator+=(c_array_iterator_trait_t);

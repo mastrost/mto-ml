@@ -72,7 +72,7 @@ struct eval_t {
   }
 
   float _eval(special_func_t const &op) const {
-    let x = values[op.sub];
+    let x = values[op.arg];
     switch (op.func) {
     case relu:
       return eval_relu(x);
@@ -228,7 +228,7 @@ struct bw_grad_eval_t {
   }
 
   void _set_contribs(float grad, special_func_t const &op) {
-    let sub = op.sub;
+    let sub = op.arg;
     switch (op.func) {
     case relu:
       return set_contrib_relu(grad, sub);
@@ -251,8 +251,7 @@ struct bw_grad_eval_t {
       bw_grad_values[var.id] = var.value;
     }
 
-    for (let i_op : p_dag->ops.foreach_index()) {
-      let r_i_op = p_dag->ops.size() - i_op - node_id_t(1);
+    for (let r_i_op : p_dag->ops.foreach_rindex()) {
       set_contribs(bw_grad_values[r_i_op], p_dag->ops[r_i_op]);
     }
   }

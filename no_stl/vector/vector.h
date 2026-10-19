@@ -225,6 +225,7 @@ public:
   }
 
   span::foreach_index_t<index_type> foreach_index() const { return {_size}; }
+  span::foreach_rindex_t<index_type> foreach_rindex() const { return {_size}; }
 
   span::span_t<value_type const, index_type> const_span_of() const {
     return {buffer.as_initialized(), _size};
