@@ -1,6 +1,5 @@
 //[mto.import ./dag_to_ast]
 //[mto.import ./ast_to_c_source]
-//[mto.import ./jit_compiler]
 //[mto.import ../expr]
 //[mto.import cpp_tools/unittest:UNITTEST#]
 
@@ -9,13 +8,11 @@
 //[mto-gen.begin]
 #include "./dag_to_ast.h"
 #include "./ast_to_c_source.h"
-#include "./jit_compiler.h"
 #include "./../expr.h"
 #include "cpp_tools/unittest.h"
 namespace mto::math::ml::expr::compiler::dag_to_ast {
 namespace dag_to_ast = mto::math::ml::expr::compiler::dag_to_ast;
 namespace ast_to_c_source = mto::math::ml::expr::compiler::ast_to_c_source;
-namespace jit_compiler = mto::math::ml::expr::compiler::jit_compiler;
 namespace expr = mto::math::ml::expr::expr;
 }
 #include "cpp_tools/defines.h"
@@ -42,11 +39,6 @@ UNITTEST() {
                 }});
 
   string_t src = get_c_header();
-  src += "\n";
-  {
-    let ast = to_eval_init_c_source(dag, "init_values");
-    src += generate_c_source(ast);
-  }
   src += "\n";
   {
     let ast = to_eval_c_source(dag, "eval");

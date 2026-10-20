@@ -19,22 +19,14 @@ using mto::no_stl::string::string::string_t;
 namespace mto::math::ml::expr::compiler::dag_to_ast {//[mto.module-begin]
 
 /**
- * Generates functions: 
- *
- * int init_values(float *values, int32_t const *var_ids, 
- *                 float const *var_values, int32_t num_vars);
- *
- * int eval(float *values, int32_t num_values);
- *
- * // `bw_grad_values` must have all values set 0 excepted
- * // the backward first element, which should be set to 1.
- * int eval_bw_grad(float *restrict bw_grad_values,
- *                  float const *restrict values, 
- *                  int32_t num_values);
+ * Types of generates functions:
  */
+typedef int (*eval_func_t)(float *values);
 
-ast::function_def_t
-to_eval_init_c_source(dag::dag_t const &dag, string_t const &func_name);
+// `bw_grad_values` must have all values set 0 excepted
+// the backward first element, which should be set to 1.
+typedef int (*eval_bw_grad_func_t)(float *bw_grad_values,
+                                   float const *values);
 
 ast::function_def_t
 to_eval_c_source(dag::dag_t const &dag, string_t const &func_name);

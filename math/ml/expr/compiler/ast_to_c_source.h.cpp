@@ -143,7 +143,7 @@ string_t get_c_header() {
       "#endif\n";
   src += "\n";
   src +=
-      "inline float relu(float x)\n"
+      "float relu(float x)\n"
       "{\n"
       "  return x < 0 ? 0 : x; \n"
       "}\n";

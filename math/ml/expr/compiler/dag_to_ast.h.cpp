@@ -225,42 +225,12 @@ struct bw_grad_src_t {
 }
 
 function_def_t
-to_eval_init_c_source(dag::dag_t const &dag, string_t const &func_name) {
-  let decl = function_prototype_t{
-      func_name,
-      "int",
-      {
-          {"float *", "values"},
-          {"int32_t const*", "var_ids"},
-          {"float const*", "var_values"},
-          {"int32_t", "num_vars"},
-      },
-  };
-  auto body = statements_t{};
-  let push = [&](statement_t const &stmt) {
-    body.push_back(stmt);
-  };
-
-  push(var_decl_t{"int", "i"});
-  push(expression_t{bin_op_t{"=", "i"_s, "0"_s}});
-  push(while_t{bin_op_t{"<", "i"_s, "num_vars"_s},
-               {
-                   expression_t{bin_op_t{"=", "values[var_ids[i]]"_s, "var_values[i]"_s}},
-                   expression_t{bin_op_t{"=", "i"_s, "i+1"_s}},
-               }});
-  push(return_t{"0"_s});
-
-  return {decl, body};
-}
-
-function_def_t
 to_eval_c_source(dag::dag_t const &dag, string_t const &func_name) {
   let decl = function_prototype_t{
       func_name,
       "int",
       {
           {"float * restrict", "values"},
-          {"int32_t", "num_values"},
       },
   };
   auto body = statements_t{};
@@ -283,7 +253,6 @@ to_bw_grad_eval_c_source(dag::dag_t const &dag, string_t const &func_name) {
       {
           {"float *restrict", "bw_grad_values"},
           {"float const* restrict", "values"},
-          {"int32_t", "num_values"},
       },
   };
   auto body = statements_t{};
