@@ -59,7 +59,7 @@ void write_predictor_2_to_1(model::predictor_t const &f,
   }
 }
 
-// le predicteur prédit la probabilité de chaque y_values[i]
+// the predictor predicts the probability of each y_values[i]
 float get_classifier_accuracy(model::predictor_t const &f,
                               vector_t<model::fsample_t> const &samples,
                               vector_t<float> const &y_values,
@@ -83,7 +83,7 @@ float get_classifier_accuracy(model::predictor_t const &f,
   return float(accuracy) / samples.size();
 }
 
-// le predicteur ne prédit que P(y=y0)
+// the predictor only predicts P(y=y0)
 float get_binary_classifier_accuracy(model::predictor_t const &f,
                                      vector_t<model::fsample_t> const &samples,
                                      float y0, float y1,
@@ -106,12 +106,12 @@ void test_binary_classification_X_1d() {
     samples.push_back({{float(+i)}, {BLUE}});
   }
 
-  // 1 neuron linéaire  + sigmoid
+  // 1 linear neuron + sigmoid
   let sigmoid_model_func = [](cspan_t<real_t> params,
                               cspan_t<real_t> X, expr::ops_t ops) -> vector_t<real_t> {
     REQUIRES(params.size() == 2);
     REQUIRES(X.size() == 1);
-    // Note: ne pas utiliser relu -> sigmoid
+    // Note: do not use relu -> sigmoid
     auto neuron = neuron_t{1, activation_t::linear, params, ops};
     let logit = neuron.eval(X);
     return {sigmoid(logit)};
@@ -195,11 +195,11 @@ void test_binary_classification_X_2d() {
     printf("%f\n", data.loss);
   };
 
-  // le warmup permet effectivement de stabiliser la descente.
-  // le decay est essentiel pour à la fois :
-  //  - avoir un decroissance rapide au debut
-  //  - eviter les instabilité à la fin
-  // -> ! si decay trop importante, on ne converge plus ...
+  // warmup effectively stabilizes the descent.
+  // decay is essential for both:
+  //  - having a fast decrease at the beginning
+  //  - avoiding instabilities at the end
+  // -> ! if decay is too large, we no longer converge ...
   let scheduler = model::warmup_decay_scheduler_t{.1, 1.02, 100, .999, 1000};
 
   let params = fit_model(model, loss, init_params, samples,

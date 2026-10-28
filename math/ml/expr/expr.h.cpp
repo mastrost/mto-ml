@@ -112,6 +112,14 @@ real_t ops_t::operator()(float c) const {
   return real_t(p_dag, c);
 }
 
+vector_t<real_t> ops_t::operator()(cspan_t<float> cs) const {
+  vector_t<real_t> out;
+  for (let &c : cs) {
+    out.push_back((*this)(c));
+  }
+  return out;
+}
+
 real_t ops_t::real() const {
   return real_t(p_dag);
 }

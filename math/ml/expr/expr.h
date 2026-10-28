@@ -71,6 +71,7 @@ struct ops_t {
   dag_t *const p_dag;
 
   real_t operator()(float c) const;
+  vector_t<real_t> operator()(cspan_t<float> cs) const;
   real_t real() const;
 
   real_t cases(real_t cond, vector_t<case_t> const &cases) const;
@@ -78,8 +79,8 @@ struct ops_t {
 
 /**
  * operators on arrays/tensors
- * TODO: create an 'array/tensor' user type (traduit en float dans le dag
- *       ou bien en tensor dans le dag, si tensor disponible).
+ * TODO: create an 'array/tensor' user type (translated to float in the dag
+ *       or to tensor in the dag, if tensor is available).
  */
 vector_t<real_t> operator+(cspan_t<real_t> A, cspan_t<real_t> B);
 vector_t<real_t> operator-(cspan_t<real_t> A, cspan_t<real_t> B);
@@ -91,17 +92,16 @@ real_t mse(cspan_t<vector_t<real_t>> samples,
 /**
  * utils expressions
  */
-// !ne pas utiliser apres un relu, mais depuis un input a valeur dans [-inf,+inf]
+// !do not use after a relu, but from an input with values in [-inf,+inf]
 float sigmoid(float x);
 real_t sigmoid(real_t x);
 
-
-// Attention, softmax à l'overflow facile
-// -> maintenir le logits a des nombres petits.
+// Warning, softmax is prone to overflow
+// -> keep the logits at small numbers.
 vector_t<real_t> softmax(cspan_t<real_t> logits);
 vector_t<float> softmax(cspan_t<float> logits);
 
-// bon degré de liberté (n-1), et le dernier logits fixé a 1/n
+// good degree of freedom (n-1), and the last logit is fixed at 1/n
 vector_t<real_t>
 softmax_dim_minus_one(cspan_t<real_t> partial_logits);
 vector_t<float>

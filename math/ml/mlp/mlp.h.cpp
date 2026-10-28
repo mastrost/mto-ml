@@ -97,9 +97,9 @@ vector_t<real_t> layer_t::eval(cspan_t<real_t> X) const {
   for (let &n : neurons) {
     res.push_back(n.eval(X));
   }
-  // TODO: return `res` as a contiguous and aligned array 
+  // TODO: return `res` as a contiguous and aligned array
   //       of variables, to enable vectorization
-  //       in `eval_neuron`. 
+  //       in `eval_neuron`.
   //       Note: weights must also be contiguous and aligned.
   //       -> we could ensure that with a special variable
   //          in [dag] and [expr]

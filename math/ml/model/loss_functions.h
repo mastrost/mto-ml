@@ -23,24 +23,31 @@ namespace mto::math::ml::model::loss_functions {//[mto.module-begin]
 
 using model::loss_func_t;
 using model::bound_model_t;
-using model::sample_t;
+using model::fsample_t;
 using expr::real_t;
 
 real_t compute_samples_mse(cspan_t<vector_t<real_t>> samples,
                            cspan_t<vector_t<real_t>> predictions,
                            expr::ops_t ops);
 
-real_t mse_loss(vector_t<sample_t> const &samples,
+real_t mse_loss(vector_t<fsample_t> const &samples,
                 bound_model_t const &bound_model,
                 expr::ops_t ops);
 
-// la loss suppose le modèle à valeur dans R: la probabilité de y0.
-// Une façon de faire et d'utiliser une sigmoid depuis une entrée a valeur
-// dans R (et *pas* a valeur dans R+ comme un relu).
+// The loss assumes the model outputs values in R: the probability of y0.
+// One way to achieve this is to use a sigmoid function from a
+// real-valued input (and not a non-negative output like a ReLU)
 loss_func_t get_binary_nll_loss(float y0, float y1);
 
-// la loss suppose que le modèle represente les probabilités
-// de chaque classe
+// The loss assumes that the model represents the probability of each class.
+// Note: this version is adapted to small number of categories ('enum' like),
+//       not to generic discrete laws.
+//       When adapted, it avoids encoding the values.
 loss_func_t get_nll_loss(vector_t<float> const &Y_values);
+
+// The loss assumes that the model represents the probability of each class.
+// Adapated to discrete laws with values in
+// {0, .... , num_values - 1}
+loss_func_t get_nll_loss();
 
 }//[mto.module-end]

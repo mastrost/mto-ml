@@ -55,7 +55,7 @@ struct eval_t {
         return values[c.result_value];
       }
     }
-    // TODO: gerer les erreurs
+    // TODO: handle errors
     EXIT_NOT_IMPL();
   }
 
@@ -207,7 +207,7 @@ struct bw_grad_eval_t {
         break;
       }
     }
-    // TODO: gerer les erreurs
+    // TODO: handle errors
     if (!is_valid_switch) {
       EXIT_NOT_IMPL();
     }
@@ -334,7 +334,7 @@ namespace _ns =
 mto::math::ml::expr::dag//[mto.module-namespace]
     ;
 
-// pas besoin, any_op_t n'utilisé que dans ce cpp.
+// not needed, any_op_t is only used in this cpp.
 INSTANCIATE_STACK_VARIANT(
     _ns::fconst_t,
     _ns::var_t,

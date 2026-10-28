@@ -2,7 +2,7 @@
 //[mto.import ../expr/dag]
 //[mto.import no_stl/variant/stack_variant.impl:INSTANCIATE_STACK_VARIANT#]
 //[mto.import ../expr/compiler/jit_compiler]
-#include <iostream>
+#include <stdexcept>
 
 //[mto-gen.begin]
 #include "./model.h"
@@ -78,7 +78,7 @@ void perform_descent_step(
   on_iteration({epoch, rate, loss, retrieve_parameters_weights});
 }
 
-void _fit(vector_t<sample_t> const &samples,
+void _fit(vector_t<fsample_t> const &samples,
           bound_model_t const &bound_model,
           loss_func_t const &loss,
           vector_t<dag::var_value_t> &params,
@@ -93,7 +93,7 @@ void _fit(vector_t<sample_t> const &samples,
   }
 }
 
-void _fit(vector_t<sample_t> const &samples,
+void _fit(vector_t<fsample_t> const &samples,
           bound_model_t const &bound_model,
           loss_func_t const &loss,
           vector_t<dag::var_value_t> &params,
@@ -107,7 +107,7 @@ void _fit(vector_t<sample_t> const &samples,
   //  - use compiled version if desired.
   //  - specify optimization level (-O3 is very slow on fully inlined functions)
   //  Note: current compiled version is only x2 times faster then interpreted
-  //        TODO: 
+  //        TODO:
   //         - remove allocations.
   //         - forward 'tensor' in the c source, to allow vectorization and
   //           to reduced the code size.
@@ -140,7 +140,7 @@ void _fit(vector_t<sample_t> const &samples,
   }
 }
 
-void fit(vector_t<sample_t> const &samples,
+void fit(vector_t<fsample_t> const &samples,
          bound_model_t const &bound_model,
          loss_func_t const &loss,
          vector_t<dag::var_value_t> &params,
@@ -207,20 +207,7 @@ fit_model(model_t const &model,
   }
   let bound_model = model.bind(params);
 
-  vector_t<sample_t> expr_samples;
-  for (let &sample : samples) {
-    vector_t<real_t> X;
-    for (let &x : sample.X) {
-      X.push_back(ops(x));
-    }
-    vector_t<real_t> Y;
-    for (let &y : sample.Y) {
-      Y.push_back(ops(y));
-    }
-    expr_samples.push_back({X, Y});
-  }
-
-  fit(expr_samples, bound_model, loss, params_values, dag, ops,
+  fit(samples, bound_model, loss, params_values, dag, ops,
       scheduler, on_iteration);
   vector_t<float> _params_values;
   for (let &value : params_values) {

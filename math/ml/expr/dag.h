@@ -21,6 +21,16 @@ namespace mto::math::ml::expr::dag {//[mto.module-begin]
 
 STRONG_TYPED_INT(int32_t, node_id_t);
 
+/**
+ * TODO:
+ *  - support tensors
+ *  - the dag should be agnostic of the real tensor
+ *    dimensions. This enables the calling of the model
+ *    with the array of samples, which returns an array
+ *    of results, comparable with the samples with
+ *    a tensor function in the loss function
+ *    -> avoids the loop over all samples in the loss function.
+ */
 struct fconst_t {
   float value;
 };
@@ -57,7 +67,9 @@ struct cases_t {
   vector_t<case_t> cases;
 };
 
-enum func_t { relu, log, exp };
+enum func_t { relu,
+              log,
+              exp };
 
 struct special_func_t {
   func_t func;

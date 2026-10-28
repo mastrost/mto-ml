@@ -89,7 +89,7 @@ fit(model_t const &model, loss_func_t const &loss,
                    optimizer_params, on_iteration);
 }
 
-// le modèle est directement la probabilité à estimer
+// the model is directly the probability to estimate
 void test_binary_classification_raw() {
   let p_y0_real = .80f;
   let y0 = 0;
@@ -113,7 +113,7 @@ void test_binary_classification_raw() {
   CHECK(equals(params_values[0], p_y0_real));
 }
 
-// le modèle est un logit.
+// the model is a logit.
 void test_binary_classification_sigmoid() {
   let p_y0_real = .80f;
   let y0 = 0;
@@ -166,7 +166,7 @@ void test_multiclass_classification_raw() {
   let samples = get_multiclass_classification_samples(
       RED, BLUE, GREEN, p_RED_real, p_BLUE_real, 1000);
 
-  // pour n classes, il y n-1 degres de libertés (poids)
+  // for n classes, there are n-1 degrees of freedom (weights)
   let model_func = [](cspan_t<real_t> params,
                       cspan_t<real_t> X, expr::ops_t ops) -> vector_t<real_t> {
     REQUIRES(params.size() == 2);
@@ -196,7 +196,7 @@ void test_multiclass_classification_softmax() {
   let samples = get_multiclass_classification_samples(
       RED, BLUE, GREEN, p_RED_real, p_BLUE_real, 1000);
 
-  // pour n classes, il y n-1 degres de libertés (poids)
+  // for n classes, there are n-1 degrees of freedom (weights)
   let model_func = [](cspan_t<real_t> params,
                       cspan_t<real_t> X, expr::ops_t ops) -> vector_t<real_t> {
     REQUIRES(params.size() == 2);
@@ -220,11 +220,16 @@ void test_multiclass_classification_softmax() {
   CHECK(equals(probas[2], 1 - p_RED_real - p_BLUE_real));
 }
 
+void test_nll_loss() {
+  // TODO
+}
+
 UNITTEST() {
   test_binary_classification_raw();
   test_binary_classification_sigmoid();
   test_multiclass_classification_raw();
   test_multiclass_classification_softmax();
+  test_nll_loss();
   test_regression();
 
   // TODO:

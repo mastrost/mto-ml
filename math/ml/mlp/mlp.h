@@ -28,13 +28,13 @@ real_t eval_neuron(cspan_t<real_t> X,
                    ops_t ops);
 
 struct neuron_t {
-  // consomme les elements de 'params' pour initialiser b et W
+  // consumes the elements of 'params' to initialize b and W
   neuron_t(size_t num_inputs,
            activation_t _activation,
            cspan_t<real_t> &params,
            ops_t _ops);
 
-  // meme ordre que le constructeur utilise pour `params`
+  // same order as the constructor uses for `params`
   static void
   get_init_parameters_values(size_t num_inputs, vector_t<float> &params);
 
@@ -74,7 +74,7 @@ struct mlp_t {
 
   vector_t<real_t> eval(cspan_t<real_t> X) const;
 
-  // doivent être de la forme (a,b) -> (b->c) -> (c->d)
+  // must be of the form (a,b) -> (b->c) -> (c->d)
   vector_t<layer_t> layers;
 };
 
