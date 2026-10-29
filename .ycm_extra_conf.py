@@ -5,7 +5,6 @@ def Settings( **kwargs ):
                 'flags': 
                 [ '-x', 'c', '-Wall', '-Werror'
                  , '-Werror=missing-field-initializers'
-                 , "-Wimplicit-fallthrough"
                  , "-DCHECK_PRECONDITIONS"
                  , "-DIDE"
                  , '-I', '.'
@@ -16,8 +15,8 @@ def Settings( **kwargs ):
                 'flags': 
                 [ '-x', 'c++', '-Wall', '-Werror', '-std=c++20'
                  , '-Werror=missing-field-initializers'
-                 , "-Wimplicit-fallthrough"
                  , '-Wno-unused-local-typedef'
+                 , '-Wno-unused-const-variable'
                  , "-DCHECK_PRECONDITIONS"
                  , "-DIDE"
                  , '-I', '.'
