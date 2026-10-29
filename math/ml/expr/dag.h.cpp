@@ -1,14 +1,17 @@
 //[mto.import ./dag]
 //[mto.import no_stl/variant/stack_variant.impl:INSTANCIATE_STACK_VARIANT#]
 //[mto.import no_stl/math/functions as math]
+//[mto.import no_stl/span/span:span_t]
 
 //[mto-gen.begin]
 #include "./dag.h"
 #include "no_stl/variant/stack_variant.impl.h"
 #include "no_stl/math/functions.h"
+#include "no_stl/span/span.h"
 namespace mto::math::ml::expr::dag {
 namespace dag = mto::math::ml::expr::dag;
 namespace math = mto::no_stl::math::functions;
+using mto::no_stl::span::span::span_t;
 }
 #include "cpp_tools/defines.h"
 //[mto-gen.end]
@@ -20,10 +23,6 @@ namespace mto::math::ml::expr::dag {//[mto.module-begin]
 namespace {
 
 struct eval_t {
-  eval_t(dag_t const *const _p_dag) : p_dag(_p_dag) {
-    values = vector_t<float, node_id_t>(p_dag->ops.size(), fnan);
-  }
-
   float _eval(fconst_t const &op) const {
     return op.value;
   }
@@ -90,18 +89,14 @@ struct eval_t {
     });
   }
 
-  void eval(cspan_t<var_value_t> var_values) {
-    for (let &var : var_values) {
-      values[var.id] = var.value;
-    }
-
+  void eval() {
     for (let i_op : p_dag->ops.foreach_index()) {
       values[i_op] = eval(p_dag->ops[i_op]);
     }
   }
 
   dag_t const *const p_dag;
-  vector_t<float, node_id_t> values;
+  span_t<float, node_id_t> values;
 };
 
 struct fw_grad_eval_t {
@@ -166,13 +161,6 @@ struct fw_grad_eval_t {
 };
 
 struct bw_grad_eval_t {
-  bw_grad_eval_t(dag_t const *const _p_dag,
-                 cspan_t<float, node_id_t> const _values)
-      : p_dag(_p_dag), values(_values) {
-    // ! init to 0 is important in this case
-    bw_grad_values = vector_t<float, node_id_t>(p_dag->ops.size(), 0.f);
-  }
-
   void _set_contribs(float grad, fconst_t const &op) {
   }
 
@@ -246,11 +234,7 @@ struct bw_grad_eval_t {
     });
   }
 
-  void eval(cspan_t<var_value_t> var_grads) {
-    for (let &var : var_grads) {
-      bw_grad_values[var.id] = var.value;
-    }
-
+  void eval() {
     for (let r_i_op : p_dag->ops.foreach_rindex()) {
       set_contribs(bw_grad_values[r_i_op], p_dag->ops[r_i_op]);
     }
@@ -258,7 +242,7 @@ struct bw_grad_eval_t {
 
   dag_t const *const p_dag;
   cspan_t<float, node_id_t> const values;
-  vector_t<float, node_id_t> bw_grad_values;
+  span_t<float, node_id_t> bw_grad_values;
 };
 
 }
@@ -305,9 +289,16 @@ node_id_t dag_t::push(any_op_t const &op) {
 
 vector_t<float, node_id_t>
 eval(dag_t const &dag, vector_t<var_value_t> const &var_values) {
-  auto dag_eval = eval_t{&dag};
-  dag_eval.eval(var_values);
-  return dag_eval.values;
+  auto values = vector_t<float, node_id_t>(dag.ops.size(), fnan);
+
+  auto dag_eval = eval_t{&dag, values};
+
+  for (let &var : var_values) {
+    values[var.id] = var.value;
+  }
+
+  dag_eval.eval();
+  return values;
 }
 
 vector_t<float, node_id_t>
@@ -323,9 +314,41 @@ vector_t<float, node_id_t>
 eval_bw_grad(dag_t const &dag,
              cspan_t<float, node_id_t> values,
              vector_t<var_value_t> const &var_grads) {
-  auto dag_eval = bw_grad_eval_t{&dag, values};
-  dag_eval.eval(var_grads);
-  return dag_eval.bw_grad_values;
+  // ! init to 0 is important in this case
+  auto bw_grad_values = vector_t<float, node_id_t>(dag.ops.size(), 0.f);
+  for (let &var : var_grads) {
+    bw_grad_values[var.id] = var.value;
+  }
+
+  auto dag_eval = bw_grad_eval_t{&dag, values, bw_grad_values};
+  dag_eval.eval();
+  return bw_grad_values;
+}
+
+unique_ptr_t<evaluator_t>
+create_dag_evaluator(dag_t const &dag) {
+  struct impl_t : evaluator_t {
+    impl_t(dag_t const &_dag) : dag(_dag) {
+    }
+
+    result_t<> eval(float *values) {
+      auto dag_eval = eval_t{&dag, {values, dag.ops.size()}};
+      dag_eval.eval();
+      return empty_t{};
+    }
+
+    result_t<>
+    eval_bw_grad(float *bw_grad_values, float const *values) {
+      let n = dag.ops.size();
+      auto dag_eval = bw_grad_eval_t{&dag, {values, n}, {bw_grad_values, n}};
+      dag_eval.eval();
+      return empty_t{};
+    }
+
+    dag_t dag;
+  };
+
+  return new impl_t{dag};
 }
 
 }//[mto.module-end]

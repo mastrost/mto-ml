@@ -77,7 +77,8 @@ get_binary_classification_samples(float p_y0,
 vector_t<float>
 fit(model_t const &model, loss_func_t const &loss,
     vector_t<fsample_t> const &samples,
-    int32_t max_iter, float learning_rate) {
+    int32_t max_iter, float learning_rate,
+    compilation_mode_t mode = dag_eval_t{}) {
   let init_params = model.get_init_parameters_values();
   let optimizer_params = basic_scheduler_t{max_iter, learning_rate};
   let on_iteration = [](iteration_cb_data_t const &data) {
@@ -86,11 +87,11 @@ fit(model_t const &model, loss_func_t const &loss,
   };
 
   return fit_model(model, loss, init_params, samples,
-                   optimizer_params, on_iteration);
+                   optimizer_params, on_iteration, mode);
 }
 
 // the model is directly the probability to estimate
-void test_binary_classification_raw() {
+void test_binary_classification_raw(compilation_mode_t compilation) {
   let p_y0_real = .80f;
   let y0 = 0;
   let y1 = 1;
@@ -108,7 +109,7 @@ void test_binary_classification_raw() {
 
   let loss = loss_functions::get_binary_nll_loss(y0, y1);
 
-  let params_values = fit(model, loss, samples, 100, .1f);
+  let params_values = fit(model, loss, samples, 100, .1f, compilation);
 
   CHECK(equals(params_values[0], p_y0_real));
 }
@@ -225,7 +226,8 @@ void test_nll_loss() {
 }
 
 UNITTEST() {
-  test_binary_classification_raw();
+  test_binary_classification_raw(dag_eval_t{});
+  test_binary_classification_raw(c_source_jit_t{});
   test_binary_classification_sigmoid();
   test_multiclass_classification_raw();
   test_multiclass_classification_softmax();

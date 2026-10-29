@@ -22,8 +22,8 @@ using namespace dag_to_ast;
 using namespace ast_to_c_source;
 
 namespace {
-struct evaluator_impl_t : evaluator_t {
-  result_t<empty_t>
+struct evaluator_impl_t : dag::evaluator_t {
+  result_t<>
   eval(float *values) {
     let err = c_eval(values);
     if (err != 0) {
@@ -33,7 +33,7 @@ struct evaluator_impl_t : evaluator_t {
     }
   }
 
-  result_t<empty_t>
+  result_t<>
   eval_bw_grad(float *bw_grad_values, float const *values) {
     let err = c_eval_bw_grad(bw_grad_values, values);
     if (err != 0) {
@@ -77,7 +77,7 @@ get_full_c_source(dag::dag_t const &dag) {
 
 }
 
-result_t<unique_ptr_t<evaluator_t>>
+result_t<unique_ptr_t<dag::evaluator_t>>
 compile_dag(dag::dag_t const &dag,
             string_t const &compiler_path,
             string_t const &c_source_path,
@@ -126,7 +126,7 @@ compile_dag(dag::dag_t const &dag,
     remove(lib_path.c_str_host());
   }
 
-  return unique_ptr_t<evaluator_t>(new evaluator_impl_t{
+  return unique_ptr_t<dag::evaluator_t>(new evaluator_impl_t{
       handle, c_eval, c_eval_bw_grad});
 }
 

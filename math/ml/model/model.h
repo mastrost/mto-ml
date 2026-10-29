@@ -4,6 +4,7 @@
 //[mto.import no_stl/function/function:function_t]
 //[mto.import no_stl/span/span:cspan_t]
 //[mto.import no_stl/variant/stack_variant:stack_variant_t]
+//[mto.import no_stl/string/string:string_t]
 
 //[mto-gen.begin]
 #include "./../expr/expr.h"
@@ -11,12 +12,14 @@
 #include "no_stl/function/function.h"
 #include "no_stl/span/span.h"
 #include "no_stl/variant/stack_variant.h"
+#include "no_stl/string/string.h"
 namespace mto::math::ml::model::model {
 namespace expr = mto::math::ml::expr::expr;
 using mto::no_stl::vector::vector::vector_t;
 using mto::no_stl::function::function::function_t;
 using mto::no_stl::span::span::cspan_t;
 using mto::no_stl::variant::stack_variant::stack_variant_t;
+using mto::no_stl::string::string::string_t;
 }
 #include "cpp_tools/defines.h"
 //[mto-gen.end]
@@ -105,6 +108,18 @@ struct warmup_decay_scheduler_t {
 typedef stack_variant_t<basic_scheduler_t, warmup_decay_scheduler_t>
     any_scheduler_t;
 
+struct dag_eval_t {};
+
+struct c_source_jit_t {
+  string_t compiler_path = "gcc";
+  string_t work_dir = "/tmp";
+  bool remove_tmp_files = true;
+  // TODO:
+  // - specify optimization level (-O3 is very slow on fully inlined functions)
+};
+
+typedef stack_variant_t<dag_eval_t, c_source_jit_t> compilation_mode_t;
+
 /**
  * model, loss, samples must be compatible.
  */
@@ -114,7 +129,8 @@ fit_model(model_t const &model,
           vector_t<float> const &init_params,
           vector_t<fsample_t> const &samples,
           any_scheduler_t const &scheduler,
-          on_iteration_t const &on_iteration);
+          on_iteration_t const &on_iteration,
+          compilation_mode_t compilation_mode = dag_eval_t{});
 
 typedef function_t<vector_t<float>(vector_t<float> const &)> predictor_t;
 

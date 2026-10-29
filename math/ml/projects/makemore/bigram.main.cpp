@@ -1,22 +1,21 @@
-//[mto.import cpp_tools/main:MAIN#]
+//[mto.import ./common]
 //[mto.import ../../expr/expr]
 //[mto.import ../../mlp/mlp]
 //[mto.import ../../model/model:real_t,]
 //[mto.import ../../model/loss_functions]
-
 //[mto.import no_stl/vector/vector:vector_t]
 //[mto.import no_stl/string/string:string_t]
 //[mto.import no_stl/system/file/file_utils]
 //[mto.import no_stl/result/error:result_t,error_t,empty_t]
-//[mto.import no_stl/array/array:array_t]
 //[mto.import no_stl/span/span:cspan_t]
+//[mto.import cpp_tools/main:MAIN#]
 
 #include <random>
 
 #include <cstdio>
 
 //[mto-gen.begin]
-#include "cpp_tools/main.h"
+#include "./common.h"
 #include "./../../expr/expr.h"
 #include "./../../mlp/mlp.h"
 #include "./../../model/model.h"
@@ -25,9 +24,10 @@
 #include "no_stl/string/string.h"
 #include "no_stl/system/file/file_utils.h"
 #include "no_stl/result/error.h"
-#include "no_stl/array/array.h"
 #include "no_stl/span/span.h"
+#include "cpp_tools/main.h"
 namespace mto::math::ml::projects::makemore::bigram {
+namespace common = mto::math::ml::projects::makemore::common;
 namespace expr = mto::math::ml::expr::expr;
 namespace mlp = mto::math::ml::mlp::mlp;
 using mto::math::ml::model::model::real_t;
@@ -39,7 +39,6 @@ namespace file_utils = mto::no_stl::system::file::file_utils;
 using mto::no_stl::result::error::result_t;
 using mto::no_stl::result::error::error_t;
 using mto::no_stl::result::error::empty_t;
-using mto::no_stl::array::array::array_t;
 using mto::no_stl::span::span::cspan_t;
 }
 #include "cpp_tools/defines.h"
@@ -47,56 +46,7 @@ using mto::no_stl::span::span::cspan_t;
 //[mto]
 namespace mto::math::ml::projects::makemore::bigram {//[mto.module-begin]
 
-static constexpr char begin = '<';
-static constexpr char end = '>';
-typedef array_t<char, size_t, 2> bigram_t;
-size_t num_chars = 28;
-
-typedef vector_t<string_t> words_t;
-
-vector_t<bigram_t>
-extract_bigrams(words_t const &words) {
-  vector_t<bigram_t> bigrams;
-  for (let &w : words.span_of().slice(0, 1000)) {
-    for (let i_c : w.foreach_index()) {
-      if (i_c == 0) {
-        bigrams.push_back({begin, w[i_c]});
-      }
-      if (i_c == w.size() - 1) {
-        bigrams.push_back({w[i_c], end});
-      } else {
-        bigrams.push_back({w[i_c], w[i_c + 1]});
-      }
-    }
-  }
-  return bigrams;
-}
-
-char to_char(size_t i) {
-  if (i == 26) {
-    return begin;
-  } else if (i == 27) {
-    return end;
-  } else {
-    REQUIRES(i >= 0 && i <= 25);
-    return i + 'a';
-  }
-}
-
-size_t to_index(char c) {
-  if (c == begin) {
-    return 26;
-  } else if (c == end) {
-    return 27;
-  } else {
-    REQUIRES(c >= 'a' && c <= 'z');
-    return size_t(c) - size_t('a');
-  }
-}
-
-float to_findex(char c) {
-  return to_index(c);
-}
+using namespace common;
 
 vector_t<float> one_hot(size_t index) {
   auto enc = vector_t<float>(num_chars, 0);
