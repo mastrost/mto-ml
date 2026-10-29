@@ -30,6 +30,7 @@ STRONG_TYPED_INT(int32_t, node_id_t);
  *    of results, comparable with the samples with
  *    a tensor function in the loss function
  *    -> avoids the loop over all samples in the loss function.
+ *       (and makes the dag independant of the number of inputs)
  */
 struct fconst_t {
   float value;
