@@ -139,7 +139,8 @@ type_t mat_t::type() const {
 }
 
 mat_t mat_t::res(node_id_t res_id) const {
-  return {p_dag, res_id, {shape[0], shape[1]}};
+  let t = (*p_dag).nodes[res_id].t;
+  return {p_dag, res_id, {t.shape[0], t.shape[1]}};
 }
 
 ops_t mat_t::ops() const {

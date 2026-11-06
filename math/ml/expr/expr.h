@@ -97,10 +97,12 @@ struct vec_t {
   type_t type() const;
   ops_t ops() const;
 
-  vec_t res(node_id_t res_id) const;
   dag_t *const p_dag;
   node_id_t id;
   int32_t n;
+
+  //internal
+  vec_t res(node_id_t res_id) const;
 };
 
 /**
@@ -119,11 +121,14 @@ struct mat_t {
   type_t type() const;
   ops_t ops() const;
 
-  mat_t res(node_id_t res_id) const;
   dag_t *const p_dag;
   node_id_t id;
   shape_t shape;
-  // TODO: add stride ?
+  // Note: we could host the stripe to propagate it more cleverly
+  //       (even if it's just a hint)
+
+  //internal
+  mat_t res(node_id_t res_id) const;
 };
 
 struct ops_t {

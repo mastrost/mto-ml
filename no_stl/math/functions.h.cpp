@@ -140,12 +140,4 @@ double fabs(double x) {
   return std::fabs(x);
 }
 
-float relu(float x) {
-  return x < 0 ? 0 : x;
-}
-
-double relu(double x) {
-  return x < 0 ? 0 : x;
-}
-
 }

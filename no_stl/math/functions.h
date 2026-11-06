@@ -101,7 +101,12 @@ inline _t clamp(_t x, _t _min, _t _max) {
   return min(max(x, _min), _max);
 }
 
-float relu(float x);
-double relu(double x);
+inline float relu(float x) {
+  return x < 0 ? 0 : x;
+}
+
+inline double relu(double x) {
+  return x < 0 ? 0 : x;
+}
 
 }

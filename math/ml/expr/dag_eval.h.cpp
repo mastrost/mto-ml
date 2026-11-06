@@ -1,15 +1,17 @@
 
-#include "./values.h"
 #include "./dag_eval.h"
+#include "./values.h"
 #include "no_stl/span/span.h"
 #include "no_stl/math/functions.h"
 #include "no_stl/byte/byte.h"
+#include "no_stl/function/function.h"
 namespace mto::math::ml::expr::dag_eval {
-namespace values = mto::math::ml::expr::values;
 namespace dag_eval = mto::math::ml::expr::dag_eval;
+using mto::math::ml::expr::values::fmat_t;
 using mto::no_stl::span::span::span_t;
 namespace math = mto::no_stl::math::functions;
 using mto::no_stl::byte::byte::byte_t;
+using mto::no_stl::function::function::function_t;
 }
 #include "cpp_tools/defines.h"
 namespace mto::math::ml::expr::dag_eval {
@@ -20,12 +22,28 @@ using namespace dag;
 
 namespace {
 
-struct ftensor_t {
-  float *data;
-  int64_t N;
+float identity(float x) { return x; }
+float neg(float x) { return -x; }
+float reluf(float x) { return math::relu(x); }
+float logf(float x) { return math::log(x); }
+float expf(float x) { return math::exp(x); }
+float negf(float x) { return -x; }
+float invf(float x) { return 1.f / x; }
+
+float d_reluf(float x, float dx) { return x < 0 ? 0 : dx; }
+float d_logf(float x, float dx) { return dx / x; }
+float d_expf(float x, float dx) { return math::exp(x) * dx; }
+float d_invf(float x, float dx) { return -dx / (x * x); }
+
+float addf(float x, float y) { return x + y; }
+float mulf(float x, float y) { return x * y; }
+
+struct value_t {
+  byte_t *values;
+  node_id_t id;
 };
 
-struct eval_t {
+struct dag_values_t {
   offset_t get_offset(node_id_t id) const {
     return p_dag->nodes[id].offset;
   }
@@ -34,90 +52,159 @@ struct eval_t {
     return p_dag->nodes[id].t;
   }
 
-  ftensor_t get_tensor(node_id_t id) const {
-    let t = get_type(id);
+  bool is_real(node_id_t id) const {
+    return get_type(id).shape.size() == 0;
+  }
+
+  bool is_mat(node_id_t id) const {
+    return get_type(id).shape.size() == 2;
+  }
+
+  float *get_fptr(value_t val) const {
+    let offset = get_offset(val.id);
+    return (float *)(val.values + size_t(offset));
+  }
+
+  float &get(value_t val) const {
+    return *get_fptr(val);
+  }
+
+  fmat_t get_fmat(value_t val) const {
+    let t = get_type(val.id);
     REQUIRES(t.dtype == dtype_t::f32);
-    float *p = get_fptr(id);
-    return {p, num_elements(t.shape)};
+    REQUIRES(t.shape.size() == 2);
+    float *p = get_fptr(val);
+    return {p, {t.shape[0], t.shape[1]}, {t.stride[0], t.stride[1]}};
   }
 
-#define REQUIRES_REAL(id) REQUIRES(get_type(id).shape.is_empty());
-  float *get_fptr(node_id_t id) const {
-    let offset = get_offset(id);
-    return (float *)(values + size_t(offset));
+  // propagates 'f' as inlinable function to allow inlining and
+  // vectorization
+  template <float (*f)(float)>
+  void set_result(value_t dst, value_t src) const {
+    if (is_real(dst.id)) {
+      get(dst) = f(get(src));
+    } else if (is_mat(dst.id)) {
+      set(get_fmat(dst), get_fmat(src), f);
+    } else {
+      EXIT_NOT_IMPL();
+    }
   }
 
-  float &get(node_id_t id) const {
-    return *get_fptr(id);
+  template <float (*f)(float)>
+  void acc_result(value_t dst, value_t src) const {
+    if (is_real(dst.id)) {
+      get(dst) += f(get(src));
+    } else if (is_mat(dst.id)) {
+      acc(get_fmat(dst), get_fmat(src), f);
+    } else {
+      EXIT_NOT_IMPL();
+    }
+  }
+
+  template <float (*f)(float, float)>
+  void set_bin_op_result(value_t dst, value_t lhs, value_t rhs) const {
+    if (is_real(dst.id)) {
+      get(dst) = f(get(lhs), get(rhs));
+    } else if (is_mat(dst.id)) {
+      set_binop(get_fmat(dst), get_fmat(lhs), get_fmat(rhs), f);
+    } else {
+      EXIT_NOT_IMPL();
+    }
+  }
+
+  template <float (*f)(float, float)>
+  void acc_bin_op_result(value_t dst, value_t lhs, value_t rhs) const {
+    if (is_real(dst.id)) {
+      get(dst) += f(get(lhs), get(rhs));
+    } else if (is_mat(dst.id)) {
+      acc_binop(get_fmat(dst), get_fmat(lhs), get_fmat(rhs), f);
+    } else {
+      EXIT_NOT_IMPL();
+    }
+  }
+
+  void set_matmul(value_t dst, value_t lhs, value_t rhs) const {
+    REQUIRES(is_mat(dst.id));
+    values::set_matmul(get_fmat(dst), get_fmat(lhs), get_fmat(rhs));
+  }
+
+  void acc_matmul(value_t dst, value_t lhs, value_t rhs) const {
+    REQUIRES(is_mat(dst.id));
+    values::acc_matmul(get_fmat(dst), get_fmat(lhs), get_fmat(rhs));
+  }
+
+  dag_t const *const p_dag;
+};
+
+struct eval_t {
+  value_t val(node_id_t id) const {
+    return {values, id};
+  }
+
+  template <float (*f)(float)>
+  void _set_result(node_id_t dst_id, node_id_t src_id) const {
+    return vals.set_result<f>(val(dst_id), val(src_id));
+  }
+
+  template <float (*f)(float, float)>
+  void _set_bin_op_result(node_id_t dst_id, node_id_t lhs, node_id_t rhs) const {
+    return vals.set_bin_op_result<f>(val(dst_id), val(lhs), val(rhs));
   }
 
   void _set_result(node_id_t dst_id, const_t const &op) const {
-    REQUIRES_REAL(dst_id);
-
-    REQUIRES(int(op.data.size()) == 4);
+    REQUIRES(vals.is_real(dst_id));
     let *p = (float *)op.data.data();
-    get(dst_id) = *p;
+    vals.get(val(dst_id)) = *p;
   }
 
   void _set_result(node_id_t dst_id, var_t const &op) const {
+    // variables are set by the user before evaluation
   }
 
   void _set_result(node_id_t dst_id, plus_t const &op) const {
-    let lhs = get_tensor(op.lhs);
-    let rhs = get_tensor(op.rhs);
-    let dst = get_tensor(dst_id);
-    for (int32_t i = 0; i < lhs.N; ++i) {
-      dst.data[i] = lhs.data[i] + rhs.data[i];
-    }
+    return _set_bin_op_result<addf>(dst_id, op.lhs, op.rhs);
   }
 
   void _set_result(node_id_t dst_id, neg_t const &op) const {
-    REQUIRES_REAL(dst_id);
-    get(dst_id) = -get(op.sub);
+    return _set_result<negf>(dst_id, op.sub);
   }
 
   void _set_result(node_id_t dst_id, times_t const &op) const {
-    REQUIRES_REAL(dst_id);
-    get(dst_id) = get(op.lhs) * get(op.rhs);
+    return _set_bin_op_result<mulf>(dst_id, op.lhs, op.rhs);
   }
 
   void _set_result(node_id_t dst_id, inv_t const &op) const {
-    REQUIRES_REAL(dst_id);
-    get(dst_id) = 1.f / get(op.sub);
+    return _set_result<invf>(dst_id, op.sub);
   }
 
   void _set_result(node_id_t dst_id, matmul_t const &op) const {
-    EXIT_NOT_IMPL();
+    if (vals.is_mat(dst_id)) {
+      vals.set_matmul(val(dst_id), val(op.lhs), val(op.rhs));
+    } else {
+      // TODO: handle matmul for tensors (as bulks of matrices)
+      EXIT_NOT_IMPL();
+    }
   }
 
   void _set_result(node_id_t dst_id, cases_t const &op) const {
-    REQUIRES_REAL(dst_id);
-    let condition = get(op.condition);
+    let condition = vals.get(val(op.condition));
     for (let &c : op.cases) {
-      if (get(c.condition_value) == condition) {
-        get(dst_id) = get(c.result_value);
-        return;
+      if (vals.get(val(c.condition_value)) == condition) {
+        return _set_result<identity>(dst_id, c.result_value);
       }
     }
-    // TODO: handle errors
-    EXIT_NOT_IMPL();
   }
 
   void _set_result(node_id_t dst_id, special_func_t const &op) const {
-    REQUIRES_REAL(dst_id);
-    let x = get(op.arg);
-    let y = [&]() {
-      switch (op.func) {
-      case relu:
-        return x < 0 ? 0 : x;
-      case log:
-        return math::log(x);
-      case exp:
-        return math::exp(x);
-      }
-      __builtin_unreachable();
-    }();
-    get(dst_id) = y;
+    switch (op.func) {
+    case relu:
+      return _set_result<reluf>(dst_id, op.arg);
+    case log:
+      return _set_result<logf>(dst_id, op.arg);
+    case exp:
+      return _set_result<expf>(dst_id, op.arg);
+    }
+    __builtin_unreachable();
   }
 
   void set_result(node_id_t dst_id, any_op_t const &op) const {
@@ -133,55 +220,70 @@ struct eval_t {
   }
 
   dag_t const *const p_dag;
-  byte_t *values;
+  byte_t *const values;
+  dag_values_t const vals;
 };
 
 struct fw_grad_eval_t {
-  fw_grad_eval_t(dag_t const *const _p_dag,
-                 cspan_t<float, node_id_t> const _values)
-      : p_dag(_p_dag), values(_values) {
-    fw_grad_values = vector_t<float, node_id_t>(p_dag->nodes.size(), fnan);
+  value_t val(node_id_t id) const {
+    return {values, id};
+  }
+
+  value_t fw_grad(node_id_t id) const {
+    return {fw_grad_values, id};
   }
 
   void _set_result(node_id_t dst_id, const_t const &op) {
-    fw_grad_values[dst_id] = 0;
+    REQUIRES(vals.is_real(dst_id));
+    vals.get(fw_grad(dst_id)) = 0;
   }
 
   void _set_result(node_id_t dst_id, var_t const &op) {
-    fw_grad_values[dst_id] = fw_grad_values[op.id];
+    // variables grads are set by the user before evaluation
   }
 
   void _set_result(node_id_t dst_id, plus_t const &op) {
-    fw_grad_values[dst_id] = fw_grad_values[op.lhs] + fw_grad_values[op.rhs];
+    vals.set_bin_op_result<addf>(fw_grad(dst_id), fw_grad(op.lhs), fw_grad(op.rhs));
   }
 
   void _set_result(node_id_t dst_id, neg_t const &op) {
-    fw_grad_values[dst_id] = -fw_grad_values[op.sub];
+    vals.set_result<negf>(fw_grad(dst_id), fw_grad(op.sub));
   }
 
   void _set_result(node_id_t dst_id, times_t const &op) {
-    let a = values[op.lhs];
-    let da = fw_grad_values[op.lhs];
-    let b = values[op.rhs];
-    let db = fw_grad_values[op.rhs];
-    fw_grad_values[dst_id] = da * b + a * db;
+    let a = val(op.lhs);
+    let da = fw_grad(op.lhs);
+    let b = val(op.rhs);
+    let db = fw_grad(op.rhs);
+    let dy = fw_grad(dst_id);
+    // dy = da * b + a * db;
+    vals.set_bin_op_result<mulf>(dy, da, b);
+    vals.acc_bin_op_result<mulf>(dy, a, db);
   }
 
   void _set_result(node_id_t dst_id, matmul_t const &op) {
-    EXIT_NOT_IMPL();
+    let a = val(op.lhs);
+    let da = fw_grad(op.lhs);
+    let b = val(op.rhs);
+    let db = fw_grad(op.rhs);
+    let dy = fw_grad(dst_id);
+    // dy = da * b + a * db;
+    vals.set_matmul(dy, da, b);
+    vals.acc_matmul(dy, a, db);
   }
 
   void _set_result(node_id_t dst_id, inv_t const &op) {
-    fw_grad_values[dst_id] =
-        -fw_grad_values[op.sub] / (values[op.sub] * values[op.sub]);
+    let x = val(op.sub);
+    let dx = fw_grad(op.sub);
+    // dy = -dx / x;
+    vals.set_bin_op_result<d_invf>(fw_grad(dst_id), x, dx);
   }
 
   void _set_result(node_id_t dst_id, cases_t const &op) {
-    let condition = values[op.condition];
+    let condition = vals.get(val(op.condition));
     for (let &c : op.cases) {
-      if (values[c.condition_value] == condition) {
-        fw_grad_values[dst_id] = fw_grad_values[c.result_value];
-        return;
+      if (vals.get(val(c.condition_value)) == condition) {
+        return vals.set_result<identity>(fw_grad(dst_id), fw_grad(c.result_value));
       }
     }
     // TODO: handle errors
@@ -189,20 +291,17 @@ struct fw_grad_eval_t {
   }
 
   void _set_result(node_id_t dst_id, special_func_t const &op) {
-    let x = values[op.arg];
-    let dx = fw_grad_values[op.arg];
-    let y = [&]() {
-      switch (op.func) {
-      case relu:
-        return x < 0 ? 0 : dx;
-      case log:
-        return (1.f / x) * dx;
-      case exp:
-        return math::exp(x) * dx;
-      }
-      __builtin_unreachable();
-    }();
-    fw_grad_values[dst_id] = y;
+    let x = val(op.arg);
+    let dx = fw_grad(op.arg);
+    switch (op.func) {
+    case relu:
+      return vals.set_bin_op_result<d_reluf>(fw_grad(dst_id), x, dx);
+    case log:
+      return vals.set_bin_op_result<d_logf>(fw_grad(dst_id), x, dx);
+    case exp:
+      return vals.set_bin_op_result<d_expf>(fw_grad(dst_id), x, dx);
+    }
+    __builtin_unreachable();
   }
 
   void set_result(node_id_t dst_id, any_op_t const &op) {
@@ -212,107 +311,106 @@ struct fw_grad_eval_t {
   }
 
   void eval(cspan_t<var_value_t> var_grads) {
-    for (let &var : var_grads) {
-      fw_grad_values[var.id] = var.value;
-    }
-
     for (let i_op : p_dag->nodes.foreach_index()) {
       set_result(i_op, p_dag->nodes[i_op].op);
     }
   }
 
   dag_t const *const p_dag;
-  cspan_t<float, node_id_t> const values;
-  vector_t<float, node_id_t> fw_grad_values;
+  byte_t *const values;
+  byte_t *const fw_grad_values;
+  dag_values_t const vals;
 };
 
 struct bw_grad_eval_t {
-  void _set_contribs(float grad, const_t const &op) {
+  value_t val(node_id_t id) const {
+    return {values, id};
   }
 
-  void _set_contribs(float grad, var_t const &op) {
+  value_t bw_grad(node_id_t id) const {
+    return {bw_grad_values, id};
   }
 
-  void _set_contribs(float grad, plus_t const &op) {
-    bw_grad_values[op.lhs] += grad;
-    bw_grad_values[op.rhs] += grad;
+  void _set_contribs(node_id_t grad_id, const_t const &op) {
   }
 
-  void _set_contribs(float grad, neg_t const &op) {
-    bw_grad_values[op.sub] -= grad;
+  void _set_contribs(node_id_t grad_id, var_t const &op) {
   }
 
-  void _set_contribs(float grad, times_t const &op) {
-    bw_grad_values[op.lhs] += grad * values[op.rhs];
-    bw_grad_values[op.rhs] += values[op.lhs] * grad;
+  void _set_contribs(node_id_t grad_id, plus_t const &op) {
+    vals.acc_result<identity>(bw_grad(op.lhs), bw_grad(grad_id));
+    vals.acc_result<identity>(bw_grad(op.rhs), bw_grad(grad_id));
   }
 
-  void _set_contribs(float grad, matmul_t const &op) {
+  void _set_contribs(node_id_t grad_id, neg_t const &op) {
+    vals.acc_result<neg>(bw_grad(op.sub), bw_grad(grad_id));
+  }
+
+  void _set_contribs(node_id_t grad_id, times_t const &op) {
+    let grad = bw_grad(grad_id);
+    vals.acc_bin_op_result<mulf>(bw_grad(op.lhs), grad, val(op.rhs));
+    vals.acc_bin_op_result<mulf>(bw_grad(op.rhs), val(op.lhs), grad);
+  }
+
+  void _set_contribs(node_id_t grad_id, matmul_t const &op) {
+    // dA += G @ B.T
+    // dB += A.T @ G
+    let G = vals.get_fmat(bw_grad(grad_id));
+    let A = vals.get_fmat(val(op.lhs));
+    let dA = vals.get_fmat(bw_grad(op.lhs));
+    let B = vals.get_fmat(val(op.rhs));
+    let dB = vals.get_fmat(bw_grad(op.rhs));
+
+    values::acc_matmul(dA, G, B.t());
+    values::acc_matmul(dB, A.t(), G);
+  }
+
+  void _set_contribs(node_id_t grad_id, inv_t const &op) {
+    let grad = bw_grad(grad_id);
+    let x = val(op.sub);
+    vals.acc_bin_op_result<d_invf>(bw_grad(op.sub), x, grad);
+  }
+
+  void _set_contribs(node_id_t grad_id, cases_t const &op) {
+    let condition = vals.get(val(op.condition));
+    for (let &c : op.cases) {
+      if (vals.get(val(c.condition_value)) == condition) {
+        return vals.acc_result<identity>(bw_grad(c.result_value), bw_grad(grad_id));
+      }
+    }
     EXIT_NOT_IMPL();
   }
 
-  void _set_contribs(float grad, inv_t const &op) {
-    bw_grad_values[op.sub] -= grad / (values[op.sub] * values[op.sub]);
-  }
-
-  void _set_contribs(float grad, cases_t const &op) {
-    let condition = values[op.condition];
-    bool is_valid_switch = false;
-    for (let &c : op.cases) {
-      if (values[c.condition_value] == condition) {
-        bw_grad_values[c.result_value] += grad;
-        is_valid_switch = true;
-        break;
-      }
-    }
-    // TODO: handle errors
-    if (!is_valid_switch) {
-      EXIT_NOT_IMPL();
-    }
-  }
-
-  void set_contrib_relu(float grad, node_id_t sub) {
-    if (values[sub] > 0) {
-      bw_grad_values[sub] += grad;
-    }
-  }
-
-  void set_contrib_log(float grad, node_id_t sub) {
-    bw_grad_values[sub] += grad / values[sub];
-  }
-
-  void set_contrib_exp(float grad, node_id_t sub) {
-    bw_grad_values[sub] += grad * math::exp(values[sub]);
-  }
-
-  void _set_contribs(float grad, special_func_t const &op) {
-    let sub = op.arg;
+  void _set_contribs(node_id_t grad_id, special_func_t const &op) {
+    let x = val(op.arg);
+    let dx = bw_grad(grad_id);
     switch (op.func) {
     case relu:
-      return set_contrib_relu(grad, sub);
+      return vals.acc_bin_op_result<d_reluf>(bw_grad(op.arg), x, dx);
     case log:
-      return set_contrib_log(grad, sub);
+      return vals.acc_bin_op_result<d_logf>(bw_grad(op.arg), x, dx);
     case exp:
-      return set_contrib_exp(grad, sub);
+      return vals.acc_bin_op_result<d_expf>(bw_grad(op.arg), x, dx);
     }
     __builtin_unreachable();
   }
 
-  void set_contribs(float grad, any_op_t const &op) {
-    return op.visit([this, grad](let &op) {
-      return this->_set_contribs(grad, op);
+  void set_contribs(node_id_t grad_id, any_op_t const &op) {
+    return op.visit([this, grad_id](let &op) {
+      return this->_set_contribs(grad_id, op);
     });
   }
 
   void eval() {
     for (let r_i_op : p_dag->nodes.foreach_rindex()) {
-      set_contribs(bw_grad_values[r_i_op], p_dag->nodes[r_i_op].op);
+      set_contribs(r_i_op, p_dag->nodes[r_i_op].op);
     }
   }
 
   dag_t const *const p_dag;
-  cspan_t<float, node_id_t> const values;
-  span_t<float, node_id_t> bw_grad_values;
+  byte_t *const values;
+  byte_t *const bw_grad_values;
+  dag_values_t const vals;
 };
 
 }
@@ -321,7 +419,7 @@ vector_t<float, node_id_t>
 eval(dag_t const &dag, vector_t<var_value_t> const &var_values) {
   auto values = vector_t<float, node_id_t>(dag.nodes.size(), fnan);
 
-  auto dag_eval = eval_t{&dag, (byte_t *)values.data()};
+  auto dag_eval = eval_t{&dag, (byte_t *)values.data(), {&dag}};
 
   for (let &var : var_values) {
     values[var.id] = var.value;
@@ -335,9 +433,20 @@ vector_t<float, node_id_t>
 eval_fw_grad(dag_t const &dag,
              cspan_t<float, node_id_t> values,
              vector_t<var_value_t> const &var_grads) {
-  auto dag_eval = fw_grad_eval_t{&dag, values};
+  auto fw_grad_values = vector_t<float, node_id_t>(dag.nodes.size(), fnan);
+
+  for (let &var : var_grads) {
+    fw_grad_values[var.id] = var.value;
+  }
+
+  auto dag_eval = fw_grad_eval_t{
+      &dag,
+      (byte_t *)values.data(),
+      (byte_t *)fw_grad_values.data(),
+      {&dag},
+  };
   dag_eval.eval(var_grads);
-  return dag_eval.fw_grad_values;
+  return fw_grad_values;
 }
 
 vector_t<float, node_id_t>
@@ -350,7 +459,12 @@ eval_bw_grad(dag_t const &dag,
     bw_grad_values[var.id] = var.value;
   }
 
-  auto dag_eval = bw_grad_eval_t{&dag, values, bw_grad_values};
+  auto dag_eval = bw_grad_eval_t{
+      &dag,
+      (byte_t *)values.data(),
+      (byte_t *)bw_grad_values.data(),
+      {&dag},
+  };
   dag_eval.eval();
   return bw_grad_values;
 }
@@ -395,37 +509,45 @@ create_dag_evaluator(dag_t const *p_dag) {
 
     result_t<> eval(dag_data_t &_values) {
       auto values_buf = static_cast<dag_data_impl_t &>(_values).data.data();
-      auto dag_eval = eval_t{p_dag, values_buf};
+      auto dag_eval = eval_t{p_dag, values_buf, {p_dag}};
       dag_eval.eval();
       return empty_t{};
     }
 
     result_t<> eval_bw_grad(dag_data_t &_bw_grad_values,
                             dag_data_t &_values) {
-      auto bw_grad_values_buf = (float *)static_cast<dag_data_impl_t &>(_bw_grad_values).data.data();
-      auto values_buf = (float *)static_cast<dag_data_impl_t &>(_values).data.data();
-      let n = p_dag->nodes.size();
-      auto dag_eval = bw_grad_eval_t{p_dag, {values_buf, n}, {bw_grad_values_buf, n}};
+      auto bw_grad_values_buf = static_cast<dag_data_impl_t &>(_bw_grad_values).data.data();
+      auto values_buf = static_cast<dag_data_impl_t &>(_values).data.data();
+      auto dag_eval = bw_grad_eval_t{
+          p_dag,
+          values_buf,
+          bw_grad_values_buf,
+          {p_dag},
+      };
       dag_eval.eval();
       return empty_t{};
     }
 
     result_t<> eval(float *values) {
-      auto dag_eval = eval_t{p_dag, (byte_t *)values};
+      auto dag_eval = eval_t{p_dag, (byte_t *)values, {p_dag}};
       dag_eval.eval();
       return empty_t{};
     }
 
     result_t<> eval(byte_t *values) {
-      auto dag_eval = eval_t{p_dag, values};
+      auto dag_eval = eval_t{p_dag, values, {p_dag}};
       dag_eval.eval();
       return empty_t{};
     }
 
     result_t<>
     eval_bw_grad(float *bw_grad_values, float const *values) {
-      let n = p_dag->nodes.size();
-      auto dag_eval = bw_grad_eval_t{p_dag, {values, n}, {bw_grad_values, n}};
+      auto dag_eval = bw_grad_eval_t{
+          p_dag,
+          (byte_t *)values,
+          (byte_t *)bw_grad_values,
+          {p_dag},
+      };
       dag_eval.eval();
       return empty_t{};
     }
